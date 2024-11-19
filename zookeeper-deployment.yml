@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: zoo1
+  namespace: development
 spec:
   replicas: 1
   selector:
@@ -13,26 +14,21 @@ spec:
         app: zookeeper
     spec:
       containers:
-      - name: zookeeper
-        image: confluentinc/cp-zookeeper:7.3.2
-        ports:
-          - containerPort: 2181
-        env:
-          - name: ZOOKEEPER_CLIENT_PORT
-            value: "2181"
-          - name: ZOOKEEPER_SERVER_ID
-            value: "1"
-          - name: ZOOKEEPER_SERVERS
-            value: "zoo1:2888:3888"
-        volumeMounts:
-          - mountPath: /var/lib/zookeeper/data
-            name: zookeeper-data
-          - mountPath: /var/lib/zookeeper/log
-            name: zookeeper-log
-      volumes:
-        - name: zookeeper-data
-          persistentVolumeClaim:
-            claimName: zookeeper-pvc
-        - name: zookeeper-log
-          persistentVolumeClaim:
-            claimName: zookeeper-pvc
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:7.3.2
+          ports:
+            - containerPort: 2181
+          environment:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_SERVER_ID
+              value: "1"
+            - name: ZOOKEEPER_SERVERS
+              value: "zoo1:2888:3888"
+          volumes:
+            - name: zookeeper_data
+              persistentVolumeClaim:
+                claimName: zookeeper-pvc
+            - name: zookeeper_log
+              persistentVolumeClaim:
+                claimName: zookeeper-log-pvc
