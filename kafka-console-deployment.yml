@@ -25,5 +25,3 @@ spec:
                 brokers: ["kafka1:19092"]
         ports:
           - containerPort: 8080
-        dependsOn:
-          - kafka1
