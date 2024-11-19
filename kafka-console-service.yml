@@ -1,11 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-console-service
-  namespace: development
+  name: console
 spec:
   ports:
     - port: 8080
+      targetPort: 8080
   selector:
-    app: kafka-console
-
+    app: console

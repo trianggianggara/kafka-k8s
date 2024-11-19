@@ -1,34 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka-console-deployment
-  namespace: development
+  name: console
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kafka-console
+      app: console
   template:
     metadata:
       labels:
-        app: kafka-console
+        app: console
     spec:
       containers:
-        - name: kafka-console
-          image: docker.redpanda.com/redpandadata/console:v2.7.2
-          ports:
-            - containerPort: 8080
-          env:
-            - name: CONFIG_FILEPATH
-              value: /tmp/config.yml
-            - name: CONSOLE_CONFIG_FILE
-              value: |
-                kafka:
-                  brokers: ["kafka-service:9092"]
-          volumeMounts:
-            - mountPath: /tmp
-              name: config-volume
-      volumes:
-        - name: config-volume
-          emptyDir: {}
-
+      - name: console
+        image: docker.redpanda.com/redpandadata/console:v2.7.2
+        command: ["/bin/sh", "-c", "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"]
+        env:
+          - name: CONFIG_FILEPATH
+            value: "/tmp/config.yml"
+          - name: CONSOLE_CONFIG_FILE
+            value: |
+              kafka:
+                brokers: ["kafka1:19092"]
+        ports:
+          - containerPort: 8080
+        dependsOn:
+          - kafka1

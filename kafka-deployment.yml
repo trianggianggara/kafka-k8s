@@ -1,8 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka-deployment
-  namespace: development
+  name: kafka1
 spec:
   replicas: 1
   selector:
@@ -14,15 +13,37 @@ spec:
         app: kafka
     spec:
       containers:
-        - name: kafka
-          image: confluentinc/cp-kafka:7.3.2
-          ports:
-            - containerPort: 9092
-          volumeMounts:
-            - mountPath: /var/lib/kafka/data
-              name: kafka-data
+      - name: kafka
+        image: confluentinc/cp-kafka:7.3.2
+        ports:
+          - containerPort: 9093
+          - containerPort: 29092
+          - containerPort: 9999
+        env:
+          - name: KAFKA_ADVERTISED_LISTENERS
+            value: "INTERNAL://kafka1:19092,EXTERNAL://localhost:9093,DOCKER://host.docker.internal:29092"
+          - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+            value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT"
+          - name: KAFKA_INTER_BROKER_LISTENER_NAME
+            value: "INTERNAL"
+          - name: KAFKA_ZOOKEEPER_CONNECT
+            value: "zoo1:2181"
+          - name: KAFKA_BROKER_ID
+            value: "1"
+          - name: KAFKA_LOG4J_LOGGERS
+            value: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+          - name: KAFKA_JMX_PORT
+            value: "9999"
+          - name: KAFKA_JMX_HOSTNAME
+            value: "${DOCKER_HOST_IP:-127.0.0.1}"
+          - name: KAFKA_AUTHORIZER_CLASS_NAME
+            value: "kafka.security.authorizer.AclAuthorizer"
+          - name: KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND
+            value: "true"
+        volumeMounts:
+          - mountPath: /var/lib/kafka/data
+            name: kafka-data
       volumes:
         - name: kafka-data
           persistentVolumeClaim:
-            claimName: kafka-data-pvc
-
+            claimName: kafka-pvc
